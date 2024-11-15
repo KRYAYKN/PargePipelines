@@ -15,7 +15,7 @@ permissions:
   contents: read
 
 env:
-  system_debug: false
+  system_debug: true
 
 jobs:
   build-and-deploy:
