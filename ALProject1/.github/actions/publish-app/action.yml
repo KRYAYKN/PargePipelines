@@ -1,0 +1,33 @@
+name: Publish AL Application
+description: Publish the AL application to a Business Central container.
+inputs:
+  containerName:
+    description: The name of the Business Central container.
+    required: true
+  artifactName:
+    description: The name of the artifact.
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Publish Application
+      shell: pwsh
+      run: |
+        Install-Module -Name bccontainerhelper -Force
+        $module = Get-InstalledModule -Name bccontainerhelper -ErrorAction Ignore
+        Write-Host \"BcContainerHelper $($module.Version.ToString()) installed\"
+
+        $containerName = \"${{ inputs.containerName }}\"
+        $artifactName = \"${{ inputs.artifactName }}\"
+        $authContext = New-BcAuthContext -refreshToken $env:refreshToken -tenantID $env:TENANTID
+
+        $ArtifactsDirectory = (Join-Path -Path $env:System_ArtifactsDirectory -ChildPath ($env:Release_PrimaryArtifactSourceAlias + '\Artifacts'))
+        $AppFile = Get-ChildItem -Path $ArtifactsDirectory -Filter "*.app"
+        write-host "##[section]App file" $AppFile.FullName
+        write-host "##[section]Publishing app to tenant:" $env:TENANTID "Environment:" $env:ENVIRONMENT
+        Publish-PerTenantExtensionApps `
+            -bcAuthContext $authContext `
+            -environment $env:ENVIRONMENT `
+            -appFiles $AppFile.FullName `
+            -schemaSyncMode Force
+              shell: pwsh

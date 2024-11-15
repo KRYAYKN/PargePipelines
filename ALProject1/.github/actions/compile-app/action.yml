@@ -1,0 +1,104 @@
+name: Compile AL Application
+description: Compile the AL application in the specified container.
+
+runs:
+  using: "composite"
+  steps:
+    - name: Compile Application
+      shell: pwsh
+      run: |
+        Install-Module -Name bccontainerhelper -Force
+        $module = Get-InstalledModule -Name bccontainerhelper -ErrorAction Ignore
+        Write-Host "BcContainerHelper $($module.Version.ToString()) installed"
+
+        # Fetch variables from the repository environment
+        $containerName = "${{ env.containerName }}"  # Repository variable for container name
+        $artifactName = "${{ env.artifactName }}"    # Repository variable for artifact name
+
+        # Define repository directory
+        $RepositoryDirectory = Get-Location
+
+        # Setup container parameters
+          # Fetch credentials from environment variables (secrets)
+        $username = "${{ secrets.BC_USERNAME }}"
+        $password = ConvertTo-SecureString "${{ secrets.BC_PASSWORD }}" -AsPlainText -Force
+        $Credential = New-Object System.Management.Automation.PSCredential ($username, $password)
+
+
+        try { 
+            Get-BcContainerId -containerName $containerName
+            Start-BcContainer -containerName $containerName
+        }
+        catch {  
+            $artifactUrl = Get-BCArtifactUrl -country w1 -select Latest -storageAccount bcartifacts -type Sandbox
+
+            $AdditionalParameters = @()
+            $AdditionalParameters += '--volume "{0}:{1}"' -f $RepositoryDirectory, 'c:\sources'
+            
+            $Params = @{
+              accept_eula = $true
+              artifactUrl = $artifactUrl
+              containerName = $containerName
+              auth = 'NavUserPassword'
+              credential = $Credential
+              isolation = 'process'
+              memoryLimit = '8GB'
+              accept_outdated = $true
+              useBestContainerOS = $true
+              additionalParameters = $AdditionalParameters
+            }
+            
+            New-BcContainer @Params -shortcuts None
+        }
+
+        # Increase app version
+        $app = (Get-Content "app.json" -Encoding UTF8 | ConvertFrom-Json)
+        $existingVersion = $app.version -as [version]
+        $versionBuild = Get-Date -Format "yyyyMMdd"
+        $versionRevision = Get-Date -Format "HHmmss"
+        $nextVersion = [version]::new($existingVersion.Major, $existingVersion.Minor, $versionBuild, $versionRevision)
+        $app.version = "$nextVersion"
+        $app | ConvertTo-Json | Set-Content app.json
+        Write-Host "##[section]Version increased to $nextVersion"
+
+        # Compile app
+        Write-Host "##[command]Compiling app" $app.Name $app.Version
+        Compile-AppInBcContainer -appProjectFolder $RepositoryDirectory -containerName $containerName -credential $Credential -GenerateReportLayout Yes -ReportSuppressedDiagnostics
+
+        # Copy app to build staging directory
+        Write-Host "##[section]Moving app to build staging directory"
+        Copy-Item -Path (Join-Path $RepositoryDirectory -ChildPath("\output\" + $app.publisher + "_" + $app.Name + "_" + $app.Version + ".app")) -Destination $env:Build_StagingDirectory
+        Write-Host "##[section]Staging directory $env:Build_StagingDirectory"
+
+        # Update build pipeline number
+        Write-Host "##vso[build.updatebuildnumber]$nextVersion"
+
+
+
+        #increase app version
+        $app = (Get-Content "app.json" -Encoding UTF8 | ConvertFrom-Json)
+        $existingVersion = $app.version -as [version]
+        $versionBuild = Get-Date -Format "yyyyMMdd"
+        $versionRevision = Get-Date -Format "HHmmss"
+        $nextVersion = [version]::new($existingVersion.Major, $existingVersion.Minor, $versionBuild, $versionRevision)
+        $app.version = "$nextVersion"
+        $app | ConvertTo-Json | Set-Content app.json
+        write-host "##[section]Version increased to $nextVersion"
+        #increase app version
+
+        #compile app
+        write-host "##[command]Compiling app" $app.Name $app.Version
+        Compile-AppInBcContainer -appProjectFolder $RepositoryDirectory -containerName $ContainerName -credential $Credential -GenerateReportLayout Yes -ReportSuppressedDiagnostics
+        #compile app
+
+        #copy app to build staging directory
+        write-host "##[section]Moving app to build staging directory"
+        Copy-Item -Path (Join-Path $RepositoryDirectory -ChildPath("\output\" + $app.publisher + "_" + $app.Name + "_" + $app.Version + ".app")) -Destination $env:Build_StagingDirectory
+        Copy-Item -Path (Join-Path $RepositoryDirectory -ChildPath("PublishApp.ps1")) -Destination $env:Build_StagingDirectory
+        write-host "##[section]Staging directory $env:Build_StagingDirectory"
+        #copy app to build staging directory
+
+        #updating build pipeline number
+        Write-Host "##vso[build.updatebuildnumber]$nextVersion"
+        #updating build pipeline number 
+              
