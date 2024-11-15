@@ -3,19 +3,18 @@ name: "Build and Deploy AL Application"
 on:
   pull_request:
     branches:
-      - feature/*
-      - promotion/qa
-      - qa
-      - promotion/staging
-      - staging
-      - release/*
-      - prod
+      - 'feature/**'
+      - 'promotion/**'
+      - 'qa'
+      - 'staging'
+      - 'release/**'
+      - 'prod'
 
 permissions:
   contents: read
 
 env:
-  system_debug: false
+  system_debug: true
 
 jobs:
   build-and-deploy:
