@@ -1,6 +1,7 @@
 name: "Build and Deploy AL Application"
 
 on:
+  workflow_dispatch:
   pull_request:
     branches:
       - 'feature/**'
