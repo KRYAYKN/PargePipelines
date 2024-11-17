@@ -15,7 +15,7 @@ runs:
         $containerName = "${{ inputs.containerName }}"
         $artifactName = "${{ inputs.artifactName }}"
         $username = "${{ env.BC_USERNAME }}"
-        $password = ConvertTo-SecureString $env:BC_PASSWORD -AsPlainText -Force
+        $password = ConvertTo-SecureString "${{ env.BC_PASSWORD }}" -AsPlainText -Force
         $credential = New-Object System.Management.Automation.PSCredential ($username, $password)
         $licenseFile = "${{ env.LICENSE_FILE }}"
 
