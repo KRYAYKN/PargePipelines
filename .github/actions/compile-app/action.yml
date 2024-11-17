@@ -7,22 +7,17 @@ runs:
     - name: Compile Application
       shell: pwsh
       run: |
+
         Install-Module -Name bccontainerhelper -Force
         $module = Get-InstalledModule -Name bccontainerhelper -ErrorAction Ignore
         Write-Host "BcContainerHelper $($module.Version.ToString()) installed"
 
-        # Fetch variables from the repository environment
-        $containerName = "${{ env.CONTAINERNAME }}"  # Repository variable for container name
-        $artifactName = "${{ env.ARTIFACTNAME }}"    # Repository variable for artifact name
-
-        # Define repository directory
-        $RepositoryDirectory = Get-Location
-
-        # Setup container parameters
-          # Fetch credentials from environment variables (secrets)
-        $username = "${{ secrets.BC_USERNAME }}"
-        $password = ConvertTo-SecureString "${{ secrets.BC_PASSWORD }}" -AsPlainText -Force
-        $Credential = New-Object System.Management.Automation.PSCredential ($username, $password)
+        $containerName = "${{ inputs.containerName }}"
+        $artifactName = "${{ inputs.artifactName }}"
+        $username = "${{ env.BC_USERNAME }}"
+        $password = ConvertTo-SecureString "${{ env.BC_PASSWORD }}" -AsPlainText -Force
+        $credential = New-Object System.Management.Automation.PSCredential ($username, $password)
+        $licenseFile = "${{ env.LICENSE_FILE }}"
 
 
         try { 
