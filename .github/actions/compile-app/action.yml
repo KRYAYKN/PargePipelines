@@ -43,7 +43,7 @@ runs:
               artifactUrl = $artifactUrl
               containerName = $containerName
               auth = 'NavUserPassword'
-              credential = $Credential
+              credential = $credential
               isolation = 'process'
               memoryLimit = '8GB'
               accept_outdated = $true
