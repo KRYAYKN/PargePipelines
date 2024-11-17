@@ -51,14 +51,14 @@ jobs:
 
       # AL Uygulamasını Derleme
       - name: Build AL Application
-        uses: ./github/actions/compile-app
+        uses: ./.github/actions/compile-app
         with:
           containerName: "${{ vars.containerName }}"
           artifactName: "${{ vars.artifactName }}"
 
       # AL Uygulamasını Yayınlama
       - name: Publish AL Application
-        uses: ./github/actions/publish-app
+        uses: ./.github/actions/publish-app
         with:
           containerName: "${{ vars.containerName }}"
           artifactName: "${{ vars.artifactName }}"
