@@ -24,7 +24,7 @@ runs:
         $ArtifactsDirectory = (Join-Path -Path $env:System_ArtifactsDirectory -ChildPath ($env:Release_PrimaryArtifactSourceAlias + '\Artifacts'))
         $AppFile = Get-ChildItem -Path $ArtifactsDirectory -Filter "*.app"
         write-host "##[section]App file" $AppFile.FullName
-        write-host "##[section]Publishing app to tenant:" $env:TENANTID "Environment:" $env:ENVIRONMENT
+        write-host "##[section]Publishing app to tenant:" $env:TENANT_ID "Environment:" $env:ENVIRONMENT
         Publish-PerTenantExtensionApps `
             -bcAuthContext $authContext `
             -environment "${{ env.ENVIRONMENT }}" `
