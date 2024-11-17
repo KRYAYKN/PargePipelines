@@ -22,8 +22,8 @@ runs:
 
         $containerName = "${{ inputs.containerName }}"
         $artifactName = "${{ inputs.artifactName }}"
-        if (-not "${{ env.BC_PASSWORD }}") {
-             Write-Host "Error: BC_PASSWORD is empty or not set."
+        if (-not "${{ env.BC_USERNAME }}") {
+             Write-Host "Error: BC_USERNAME is empty or not set."
             exit 1
         }
         $username = "${{ env.BC_USERNAME }}"
