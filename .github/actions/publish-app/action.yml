@@ -17,8 +17,8 @@ runs:
         $module = Get-InstalledModule -Name bccontainerhelper -ErrorAction Ignore
         Write-Host \"BcContainerHelper $($module.Version.ToString()) installed\"
 
-        $containerName = \"${{ inputs.containerName }}\"
-        $artifactName = \"${{ inputs.artifactName }}\"
+        $containerName = \"${{ inputs.CONTAINERNAME }}\"
+        $artifactName = \"${{ inputs.ARTIFACTNAME }}\"
         $authContext = New-BcAuthContext -refreshToken $env:refreshToken -tenantID $env:TENANTID
 
         $ArtifactsDirectory = (Join-Path -Path $env:System_ArtifactsDirectory -ChildPath ($env:Release_PrimaryArtifactSourceAlias + '\Artifacts'))
