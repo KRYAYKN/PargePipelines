@@ -26,35 +26,53 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
-          
-      - name: Check Docker Installation
-        run: |
-          docker --version || echo "Docker is not installed!" && exit 1
-  
-      - name: Start Docker Service
-        run: Start-Service docker
-  
-      - name: Verify Docker Is Running
-        run: docker ps    
 
+      # Docker Yüklemesini ve Hizmetini Kontrol Etme
+      - name: Check Docker Installation
+        shell: pwsh
+        run: |
+          if (-Not (docker --version)) {
+            Write-Host "Docker is not installed!"
+            exit 1
+          } else {
+            Write-Host "Docker is installed and running."
+          }
+
+      - name: Start Docker Service
+        shell: pwsh
+        run: |
+          Start-Service docker
+          Write-Host "Docker service started successfully."
+
+      - name: Verify Docker Is Running
+        shell: pwsh
+        run: |
+          docker ps || Write-Host "Docker is running, but no containers are active."
+
+      # AL Uygulamasını Derleme
       - name: Build AL Application
         uses: ./github/actions/compile-app
         with:
-          containerName: "${{ vars.containerName }}" # Pulling from repository variables
-          artifactName: "${{ vars.artifactName }}"   # Pulling from repository variables
+          containerName: "${{ vars.containerName }}"
+          artifactName: "${{ vars.artifactName }}"
 
+      # AL Uygulamasını Yayınlama
       - name: Publish AL Application
         uses: ./github/actions/publish-app
         with:
-          containerName: "${{ vars.containerName }}" # Pulling from repository variables
-          artifactName: "${{ vars.artifactName }}"   # Pulling from repository variables
+          containerName: "${{ vars.containerName }}"
+          artifactName: "${{ vars.artifactName }}"
 
+      # Derleme Artifaktlarını Yükleme
       - name: Publish Build Artifacts
         uses: actions/upload-artifact@v3
         with:
           name: Artifacts
           path: "$GITHUB_WORKSPACE/Build/Staging"
 
+      # Geçici Dosyaları Temizleme
       - name: Clean up Temporary Files
+        shell: pwsh
         run: |
           Remove-Item -Path "D:\BcContainerHelper\Extensions\${{ vars.containerName }}\my\${{ vars.artifactName }}" -Recurse -Force
+
