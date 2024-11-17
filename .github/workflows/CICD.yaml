@@ -16,18 +16,21 @@ permissions:
 
 env:
   system_debug: true
+  Build_StagingDirectory: ${{ github.workspace }}/Build/Staging
 
 jobs:
   build-and-deploy:
     runs-on: windows-latest
+   
 
     steps:
+      # Repository'yi Checkout Et
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           submodules: true
 
-      # Docker Yüklemesini ve Hizmetini Kontrol Etme
+      # Docker Kurulumunu Kontrol Et
       - name: Check Docker Installation
         shell: pwsh
         run: |
@@ -38,41 +41,30 @@ jobs:
             Write-Host "Docker is installed and running."
           }
 
+      # Docker Servisini Başlat
       - name: Start Docker Service
         shell: pwsh
         run: |
           Start-Service docker
           Write-Host "Docker service started successfully."
 
-      - name: Verify Docker Is Running
-        shell: pwsh
-        run: |
-          docker ps || Write-Host "Docker is running, but no containers are active."
-
-      # AL Uygulamasını Derleme
-      - name: Build AL Application
+      # AL Uygulamasını Derle
+      - name: Compile AL Application
         uses: ./.github/actions/compile-app
         with:
-          containerName: "${{ vars.CONTAINERNAME }}"
-          artifactName: "${{ vars.ARTIFACTNAME }}"
+          containerName: ${{ vars.CONTAINERNAME }}
+          artifactName: ${{ vars.ARTIFACTNAME }}
 
-      # AL Uygulamasını Yayınlama
+      # AL Uygulamasını Yayınla
       - name: Publish AL Application
         uses: ./.github/actions/publish-app
         with:
-          containerName: "${{ vars.CONTAINERNAME }}"
-          artifactName: "${{ vars.ARTIFACTNAME }}"
+          containerName: ${{ vars.CONTAINERNAME }}
+          artifactName: ${{ vars.ARTIFACTNAME }}
 
-      # Derleme Artifaktlarını Yükleme
+      # Derleme Artifaktlarını Yükle
       - name: Publish Build Artifacts
         uses: actions/upload-artifact@v3
         with:
           name: Artifacts
-          path: "$GITHUB_WORKSPACE/Build/Staging"
-
-      # Geçici Dosyaları Temizleme
-      - name: Clean up Temporary Files
-        shell: pwsh
-        run: |
-          Remove-Item -Path "D:\BcContainerHelper\Extensions\${{ vars.CONTAINERNAME }}\my\${{ vars.ARTIFACTNAME }}" -Recurse -Force
-
+          path: ${{ env.Build_StagingDirectory }}
