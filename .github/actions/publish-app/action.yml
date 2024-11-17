@@ -7,18 +7,32 @@ inputs:
   artifactName:
     description: The name of the artifact.
     required: true
+  TENANT_ID:
+    description: tenant id
+    required: true  
+  ENVIRONMENT:
+    description: The target Business Central environment (e.g., Sandbox or Production).
+    required: true 
 runs:
   using: "composite"
   steps:
     - name: Publish Application
       shell: pwsh
+      env:
+        containerName: ${{ inputs.containerName}}
+        artifactName: ${{ inputs.artifactName}}
+        TENANT_ID: ${{ inputs.TENANT_ID}}
+        BC_USERNAME: ${{ inputs.BC_USERNAME}}
+        LICENSE_FILE: ${{ inputs.LICENSE_FILE}}
       run: |
         Install-Module -Name bccontainerhelper -Force
         $module = Get-InstalledModule -Name bccontainerhelper -ErrorAction Ignore
         Write-Host \"BcContainerHelper $($module.Version.ToString()) installed\"
 
-        $containerName = \"${{ inputs.containerName }}\"
-        $artifactName = \"${{ inputs.artifactName }}\"
+        $containerName = $env:containerName 
+        $artifactName = $env:artifactName 
+        $tenantID = $env:TENANT_ID
+        $environment = $env:ENVIRONMENT
         $authContext = New-BcAuthContext -refreshToken $env:refreshToken -tenantID $env:TENANTID
 
         $ArtifactsDirectory = (Join-Path -Path $env:System_ArtifactsDirectory -ChildPath ($env:Release_PrimaryArtifactSourceAlias + '\Artifacts'))
@@ -27,7 +41,7 @@ runs:
         write-host "##[section]Publishing app to tenant:" $env:TENANT_ID "Environment:" $env:ENVIRONMENT
         Publish-PerTenantExtensionApps `
             -bcAuthContext $authContext `
-            -environment "${{ env.ENVIRONMENT }}" `
+            -environment $environment `
             -appFiles $AppFile.FullName `
             -schemaSyncMode Force
               shell: pwsh

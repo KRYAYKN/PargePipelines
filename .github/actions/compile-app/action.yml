@@ -8,33 +8,50 @@ inputs:
   artifactName:
     description: "The name of the artifact."
     required: true
+  BC_PASSWORD:
+    description: "bc password"
+    required: true  
+  BC_USERNAME:
+    description: "bc username"
+    required: true  
+  LICENSE_FILE:
+    description: "bc license file"
+    required: true  
 
 runs:
   using: "composite"
   steps:
     - name: Compile Application
       shell: pwsh
+      env:
+        containerName: ${{ inputs.containerName}}
+        artifactName: ${{ inputs.artifactName}}
+        BC_PASSWORD: ${{ inputs.BC_PASSWORD}}
+        BC_USERNAME: ${{ inputs.BC_USERNAME}}
+        LICENSE_FILE: ${{ inputs.LICENSE_FILE}}
+
+
       run: |
 
         Install-Module -Name bccontainerhelper -Force
         $module = Get-InstalledModule -Name bccontainerhelper -ErrorAction Ignore
         Write-Host "BcContainerHelper $($module.Version.ToString()) installed"
 
-        $containerName = "${{ inputs.containerName }}"
-        $artifactName = "${{ inputs.artifactName }}"
-        if (-not "${{ env.BC_USERNAME }}") {
+        $containerName = $env:containerName
+        $artifactName = $env:artifactName
+        if (-not $env:BC_USERNAME) {
              Write-Host "Error: BC_USERNAME is empty or not set."
             exit 1
         }
-        $username = "${{ env.BC_USERNAME }}"
-        if (-not "${{ env.BC_PASSWORD }}") {
+        $username = $env:BC_USERNAME
+        if (-not $env:BC_PASSWORD) {
              Write-Host "Error: BC_PASSWORD is empty or not set."
             exit 1
         }
-        $password = ConvertTo-SecureString "${{ env.BC_PASSWORD }}" -AsPlainText -Force
+        $password = ConvertTo-SecureString $env:BC_PASSWORD -AsPlainText -Force
         $credential = New-Object System.Management.Automation.PSCredential ($username, $password)
 
-        $licenseFile = "${{ env.LICENSE_FILE }}"
+        $licenseFile = $env:LICENSE_FILE
 
 
         try { 
@@ -75,7 +92,7 @@ runs:
 
         # Compile app
         Write-Host "##[command]Compiling app" $app.Name $app.Version
-        Compile-AppInBcContainer -appProjectFolder $RepositoryDirectory -containerName $containerName -credential $Credential -GenerateReportLayout Yes -ReportSuppressedDiagnostics
+        Compile-AppInBcContainer -appProjectFolder $RepositoryDirectory -containerName $containerName -credential $credential -GenerateReportLayout Yes -ReportSuppressedDiagnostics
 
         # Copy app to build staging directory
         Write-Host "##[section]Moving app to build staging directory"

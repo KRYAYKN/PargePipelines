@@ -65,6 +65,8 @@ jobs:
         with:
           containerName: ${{ vars.CONTAINERNAME }}
           artifactName: ${{ vars.ARTIFACTNAME }}
+          TENANT_ID: ${{ secrets.TENANT_ID }}
+          ENVIRONMENT: "LocalizationSandbox"
 
       # Derleme Artifaktlarını Yükle
       - name: Publish Build Artifacts
