@@ -12,8 +12,8 @@ runs:
         Write-Host "BcContainerHelper $($module.Version.ToString()) installed"
 
         # Fetch variables from the repository environment
-        $containerName = "${{ env.containerName }}"  # Repository variable for container name
-        $artifactName = "${{ env.artifactName }}"    # Repository variable for artifact name
+        $containerName = "${{ env.CONTAINERNAME }}"  # Repository variable for container name
+        $artifactName = "${{ env.ARTIFACTNAME }}"    # Repository variable for artifact name
 
         # Define repository directory
         $RepositoryDirectory = Get-Location
