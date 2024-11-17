@@ -1,6 +1,14 @@
 name: Compile AL Application
 description: Compile the AL application in the specified container.
 
+inputs:
+  containerName:
+    description: "The name of the Business Central container."
+    required: true
+  artifactName:
+    description: "The name of the artifact."
+    required: true
+
 runs:
   using: "composite"
   steps:
