@@ -17,6 +17,8 @@ permissions:
 env:
   system_debug: true
   Build_StagingDirectory: ${{ github.workspace }}\Build\Staging
+  ACTIONS_RUNNER_DEBUG: true
+  ACTIONS_STEP_DEBUG: true
 
 
 jobs:
