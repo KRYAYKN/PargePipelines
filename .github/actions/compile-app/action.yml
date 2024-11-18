@@ -40,6 +40,9 @@ runs:
         Write-Host "BcContainerHelper $($module.Version.ToString()) installed"
 
         $RepositoryDirectory = Get-Location
+        Write-Host "Current Working Directory:"
+        Get-Location | ForEach-Object { Write-Host $_.Path }
+
         $containerName = $env:containerName
         $artifactName = $env:artifactName
         if (-not $env:BC_USERNAME) {
