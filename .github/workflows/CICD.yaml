@@ -23,6 +23,7 @@ env:
 jobs:
   build-and-deploy:
     runs-on: windows-latest
+    environment: LocalizationSandbox
    
 
     steps:
