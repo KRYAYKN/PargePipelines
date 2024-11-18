@@ -39,6 +39,7 @@ runs:
         $module = Get-InstalledModule -Name bccontainerhelper -ErrorAction Ignore
         Write-Host "BcContainerHelper $($module.Version.ToString()) installed"
 
+        $RepositoryDirectory = Get-Location
         $containerName = $env:containerName
         $artifactName = $env:artifactName
         if (-not $env:BC_USERNAME) {
