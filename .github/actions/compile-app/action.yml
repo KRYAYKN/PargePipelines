@@ -100,36 +100,10 @@ runs:
         Write-Host "##[command]Compiling app" $app.Name $app.Version
         Compile-AppInBcContainer -appProjectFolder $RepositoryDirectory -containerName $containerName -credential $credential -GenerateReportLayout Yes -ReportSuppressedDiagnostics
 
-        # Copy app to build staging directory
-        Write-Host "##[section]Moving app to build staging directory"
-        Copy-Item -Path (Join-Path $RepositoryDirectory -ChildPath("\output\" + $app.publisher + "_" + $app.Name + "_" + $app.Version + ".app")) -Destination $env:Build_StagingDirectory
-        Write-Host "##[section]Staging directory $env:Build_StagingDirectory"
-
-        # Update build pipeline number
-        Write-Host "##vso[build.updatebuildnumber]$nextVersion"
-
-
-
-        #increase app version
-        $app = (Get-Content "app.json" -Encoding UTF8 | ConvertFrom-Json)
-        $existingVersion = $app.version -as [version]
-        $versionBuild = Get-Date -Format "yyyyMMdd"
-        $versionRevision = Get-Date -Format "HHmmss"
-        $nextVersion = [version]::new($existingVersion.Major, $existingVersion.Minor, $versionBuild, $versionRevision)
-        $app.version = "$nextVersion"
-        $app | ConvertTo-Json | Set-Content app.json
-        write-host "##[section]Version increased to $nextVersion"
-        #increase app version
-
-        #compile app
-        write-host "##[command]Compiling app" $app.Name $app.Version
-        Compile-AppInBcContainer -appProjectFolder $RepositoryDirectory -containerName $ContainerName -credential $Credential -GenerateReportLayout Yes -ReportSuppressedDiagnostics
-        #compile app
-
         #copy app to build staging directory
         write-host "##[section]Moving app to build staging directory"
         Copy-Item -Path (Join-Path $RepositoryDirectory -ChildPath("\output\" + $app.publisher + "_" + $app.Name + "_" + $app.Version + ".app")) -Destination $env:Build_StagingDirectory
-        Copy-Item -Path (Join-Path $RepositoryDirectory -ChildPath("PublishApp.ps1")) -Destination $env:Build_StagingDirectory
+        Copy-Item -Path (Join-Path $RepositoryDirectory -ChildPath(".\.github\actions\publish-app\action.yml")) -Destination $env:Build_StagingDirectory
         write-host "##[section]Staging directory $env:Build_StagingDirectory"
         #copy app to build staging directory
 
