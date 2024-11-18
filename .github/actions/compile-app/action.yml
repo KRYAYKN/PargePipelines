@@ -21,6 +21,18 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Ensure Staging Directory Exists
+      shell: pwsh
+      env:
+        Build_StagingDirectory: ${{ env.Build_StagingDirectory }}
+      run: |
+        if (-Not (Test-Path -Path "$env:Build_StagingDirectory")) {
+          Write-Host "Staging directory does not exist. Creating: $env:Build_StagingDirectory"
+          New-Item -ItemType Directory -Path "$env:Build_StagingDirectory" | Out-Null
+        } else {
+          Write-Host "Staging directory exists: $env:Build_StagingDirectory"
+        }
+
     - name: Compile Application
       shell: pwsh
       env:
@@ -29,22 +41,23 @@ runs:
         LICENSE_FILE: ${{ inputs.LICENSE_FILE }}
         containerName: ${{ inputs.containerName }}
         artifactName: ${{ inputs.artifactName }}
-
+        Build_StagingDirectory: ${{ env.Build_StagingDirectory }}
       run: |
         Write-Host "Debugging Secrets"
         Write-Host "BC_USERNAME: $env:BC_USERNAME"
         Write-Host "BC_PASSWORD: $env:BC_PASSWORD"
         Write-Host "LICENSE_FILE: $env:LICENSE_FILE"
+
         Install-Module -Name bccontainerhelper -Force
         $module = Get-InstalledModule -Name bccontainerhelper -ErrorAction Ignore
         Write-Host "BcContainerHelper $($module.Version.ToString()) installed"
 
         $RepositoryDirectory = Get-Location
-        Write-Host "Current Working Directory:"
-        Get-Location | ForEach-Object { Write-Host $_.Path }
+        Write-Host "Current Working Directory: $RepositoryDirectory"
 
         $containerName = $env:containerName
         $artifactName = $env:artifactName
+
         if (-not $env:BC_USERNAME) {
              Write-Host "Error: BC_USERNAME is empty or not set."
             exit 1
@@ -58,7 +71,6 @@ runs:
         $credential = New-Object System.Management.Automation.PSCredential ($username, $password)
 
         $licenseFile = $env:LICENSE_FILE
-
 
         try { 
             Get-BcContainerId -containerName $containerName
@@ -102,12 +114,12 @@ runs:
 
         #copy app to build staging directory
         write-host "##[section]Moving app to build staging directory"
-        Copy-Item -Path (Join-Path $RepositoryDirectory -ChildPath("\output\" + $app.publisher + "_" + $app.Name + "_" + $app.Version + ".app")) -Destination $env:Build_StagingDirectory
-        Copy-Item -Path (Join-Path $RepositoryDirectory -ChildPath(".\.github\actions\publish-app\action.yml")) -Destination $env:Build_StagingDirectory
-        write-host "##[section]Staging directory $env:Build_StagingDirectory"
-        #copy app to build staging directory
+        $stagingDirectory = "$env:Build_StagingDirectory"
+        Copy-Item -Path (Join-Path $RepositoryDirectory -ChildPath ("output\" + $app.publisher + "_" + $app.Name + "_" + $app.Version + ".app")) -Destination $stagingDirectory -Force
+        Copy-Item -Path (Join-Path $RepositoryDirectory -ChildPath ".\.github\actions\publish-app\action.yml") -Destination $stagingDirectory -Force
+        Write-Host "##[section]Staging directory content:"
+        Get-ChildItem -Path $stagingDirectory | ForEach-Object { Write-Host $_.FullName }
 
         #updating build pipeline number
         Write-Host "##vso[build.updatebuildnumber]$nextVersion"
-        #updating build pipeline number 
               
