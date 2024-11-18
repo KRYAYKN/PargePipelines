@@ -24,11 +24,11 @@ runs:
     - name: Compile Application
       shell: pwsh
       env:
-        containerName: ${{ inputs.containerName}}
-        artifactName: ${{ inputs.artifactName}}
-        BC_PASSWORD: ${{ inputs.BC_PASSWORD}}
-        BC_USERNAME: ${{ inputs.BC_USERNAME}}
-        LICENSE_FILE: ${{ inputs.LICENSE_FILE}}
+        containerName: ${{ inputs.containerName }}
+        artifactName: ${{ inputs.artifactName }}
+        BC_PASSWORD: ${{ inputs.BC_PASSWORD }}
+        BC_USERNAME: ${{ inputs.BC_USERNAME }}
+        LICENSE_FILE: ${{ inputs.LICENSE_FILE }}
 
 
       run: |
