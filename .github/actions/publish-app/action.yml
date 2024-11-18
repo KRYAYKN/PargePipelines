@@ -19,11 +19,11 @@ runs:
     - name: Publish Application
       shell: pwsh
       env:
-        containerName: ${{ inputs.containerName}}
-        artifactName: ${{ inputs.artifactName}}
-        TENANT_ID: ${{ inputs.TENANT_ID}}
-        BC_USERNAME: ${{ inputs.BC_USERNAME}}
-        LICENSE_FILE: ${{ inputs.LICENSE_FILE}}
+        containerName: ${{ inputs.containerName }}
+        artifactName: ${{ inputs.artifactName }}
+        TENANT_ID: ${{ inputs.TENANT_ID }}
+        BC_USERNAME: ${{ inputs.BC_USERNAME }}
+        LICENSE_FILE: ${{ inputs.LICENSE_FILE }}
       run: |
         Install-Module -Name bccontainerhelper -Force
         $module = Get-InstalledModule -Name bccontainerhelper -ErrorAction Ignore
