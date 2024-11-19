@@ -87,7 +87,7 @@ jobs:
           } else {
               Write-Host "No .app file found in staging directory: $stagingDirectory"
               exit 1
-  
+            }
       - name: Debug Artifacts Directory Content
         shell: pwsh
         run: |
