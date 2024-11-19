@@ -16,7 +16,7 @@ permissions:
 
 env:
   system_debug: true
-  Build_StagingDirectory: ${{ github.workspace }}/Build/Staging
+  Build_StagingDirectory: ${{ github.workspace }}\Build\Staging
   ACTIONS_RUNNER_DEBUG: true
   ACTIONS_STEP_DEBUG: true
 
@@ -70,6 +70,10 @@ jobs:
           containerName: ${{ vars.CONTAINERNAME }}
           artifactName: ${{ vars.ARTIFACTNAME }}
           TENANT_ID: ${{ secrets.TENANT_ID }}
+          BC_USERNAME: ${{ secrets.BC_USERNAME }}
+          BC_PASSWORD: ${{ secrets.BC_PASSWORD }}
+          LICENSE_FILE: ${{ secrets.LICENSE_FILE }}
+          REFRESHTOKEN: ${{ secrets.REFRESHTOKEN}}
           ENVIRONMENT: "LocalizationSandbox"
 
       # Derleme Artifaktlarını Yükle

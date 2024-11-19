@@ -1,5 +1,6 @@
 name: Publish AL Application
 description: Publish the AL application to a Business Central container.
+
 inputs:
   containerName:
     description: The name of the Business Central container.
@@ -8,40 +9,67 @@ inputs:
     description: The name of the artifact.
     required: true
   TENANT_ID:
-    description: tenant id
+    description: The tenant ID.
     required: true  
   ENVIRONMENT:
     description: The target Business Central environment (e.g., Sandbox or Production).
-    required: true 
+    required: true
+  REFRESHTOKEN:
+    description: The refresh token for authentication.
+    required: true
+
 runs:
   using: "composite"
   steps:
+    - name: Ensure Artifacts Directory Exists
+      shell: pwsh
+      env:
+        ArtifactsDirectory: ${{ github.workspace }}\Artifacts
+      run: |
+        if (-not (Test-Path -Path "$env:ArtifactsDirectory")) {
+          Write-Host "Artifacts directory does not exist. Creating: $env:ArtifactsDirectory"
+          New-Item -ItemType Directory -Path "$env:ArtifactsDirectory" | Out-Null
+        } else {
+          Write-Host "Artifacts directory exists: $env:ArtifactsDirectory"
+        }
+
     - name: Publish Application
       shell: pwsh
       env:
         containerName: ${{ inputs.containerName }}
         artifactName: ${{ inputs.artifactName }}
         TENANT_ID: ${{ inputs.TENANT_ID }}
-        BC_USERNAME: ${{ inputs.BC_USERNAME }}
-        LICENSE_FILE: ${{ inputs.LICENSE_FILE }}
+        REFRESHTOKEN: ${{ inputs.REFRESHTOKEN }}
+        ENVIRONMENT: ${{ inputs.ENVIRONMENT }}
+        ArtifactsDirectory: ${{ github.workspace }}/Artifacts
       run: |
+        # Install BcContainerHelper
         Install-Module -Name bccontainerhelper -Force
         $module = Get-InstalledModule -Name bccontainerhelper -ErrorAction Ignore
-        Write-Host \"BcContainerHelper $($module.Version.ToString()) installed\"
+        Write-Host "BcContainerHelper $($module.Version.ToString()) installed"
 
-        $containerName = $env:containerName 
-        $artifactName = $env:artifactName 
+        # Prepare variables
         $tenantID = $env:TENANT_ID
         $environment = $env:ENVIRONMENT
-        $authContext = New-BcAuthContext -refreshToken $env:refreshToken -tenantID $env:TENANTID
+        $refreshToken = $env:REFRESHTOKEN
+        $ArtifactsDirectory = $env:ArtifactsDirectory
 
-        $ArtifactsDirectory = (Join-Path -Path $env:System_ArtifactsDirectory -ChildPath ($env:Release_PrimaryArtifactSourceAlias + '\Artifacts'))
-        $AppFile = Get-ChildItem -Path $ArtifactsDirectory -Filter "*.app"
-        write-host "##[section]App file" $AppFile.FullName
-        write-host "##[section]Publishing app to tenant:" $env:TENANT_ID "Environment:" $env:ENVIRONMENT
+        # Authentication
+        $authContext = New-BcAuthContext -refreshToken $refreshToken -tenantID $tenantID
+
+        # Locate .app file
+        $AppFile = Get-ChildItem -Path $ArtifactsDirectory -Filter "*.app" | Select-Object -First 1
+        if (-not $AppFile) {
+            Write-Host "Error: No .app file found in $ArtifactsDirectory"
+            exit 1
+        }
+
+        Write-Host "App file located: $($AppFile.FullName)"
+        Write-Host "Publishing app to tenant: $tenantID, Environment: $environment"
+
+        # Publish App
         Publish-PerTenantExtensionApps `
             -bcAuthContext $authContext `
             -environment $environment `
             -appFiles $AppFile.FullName `
             -schemaSyncMode Force
-              shell: pwsh
