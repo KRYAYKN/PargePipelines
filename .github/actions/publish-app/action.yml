@@ -41,7 +41,7 @@ runs:
         TENANT_ID: ${{ inputs.TENANT_ID }}
         REFRESHTOKEN: ${{ inputs.REFRESHTOKEN }}
         ENVIRONMENT: ${{ inputs.ENVIRONMENT }}
-        ArtifactsDirectory: ${{ github.workspace }}/Artifacts
+        ArtifactsDirectory: ${{ github.workspace }}\Artifacts
       run: |
         # Install BcContainerHelper
         Install-Module -Name bccontainerhelper -Force
