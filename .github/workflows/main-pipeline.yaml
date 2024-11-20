@@ -22,15 +22,15 @@ env:
 
 jobs:
   checkout-repository:
-    uses: KRYAYKN/PargePipelines/.github/workflows/checkout-repository.yaml@main
+    uses: KRYAYKN/PargePipelines/.github/workflows/checkout-repository.yaml@promotion/staging
 
   prepare-docker:
     needs: checkout-repository
-    uses: KRYAYKN/PargePipelines/.github/workflows/prepare-docker.yaml@main
+    uses: KRYAYKN/PargePipelines/.github/workflows/prepare-docker.yaml@promotion/staging
 
   compile-and-prepare:
     needs: prepare-docker
-    uses: KRYAYKN/PargePipelines/.github/workflows/compile-app.yaml@main
+    uses: KRYAYKN/PargePipelines/.github/workflows/compile-app.yaml@promotion/staging
     with:
       containerName: ${{ vars.CONTAINERNAME }}
       artifactName: ${{ vars.ARTIFACTNAME }}
@@ -40,7 +40,7 @@ jobs:
 
   publish-app:
     needs: compile-and-prepare
-    uses: KRYAYKN/PargePipelines/.github/workflows/publish-app.yaml@main
+    uses: KRYAYKN/PargePipelines/.github/workflows/publish-app.yaml@promotion/staging
     with:
       containerName: ${{ vars.CONTAINERNAME }}
       artifactName: ${{ vars.ARTIFACTNAME }}
@@ -50,6 +50,6 @@ jobs:
 
   publish-build-artifacts:
     needs: publish-app
-    uses: KRYAYKN/PargePipelines/.github/workflows/publish-build-artifacts.yaml@main
+    uses: KRYAYKN/PargePipelines/.github/workflows/publish-build-artifacts.yaml@mpromotion/staging
     with:
       artifactsDirectory: ${{ env.Build_StagingDirectory }}
