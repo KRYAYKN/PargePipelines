@@ -16,15 +16,21 @@ permissions:
 
 env:
   system_debug: true
+
   Build_StagingDirectory: ${{ github.workspace }}\Build\Staging
   ACTIONS_RUNNER_DEBUG: true
   ACTIONS_STEP_DEBUG: true
+
+
+
 
 
 jobs:
   build-and-deploy:
     runs-on: windows-latest
     environment: LocalizationSandbox
+
+
    
 
     steps:
@@ -96,6 +102,7 @@ jobs:
           Get-ChildItem -Path $artifactsDirectory    
  
 
+
       # AL Uygulamasını Yayınla
       - name: Publish AL Application
         uses: ./.github/actions/publish-app
@@ -105,6 +112,7 @@ jobs:
           TENANT_ID: ${{ secrets.TENANT_ID }}
           REFRESHTOKEN: ${{ secrets.REFRESHTOKEN}}
           ENVIRONMENT: "LocalizationSandbox"
+
 
       # Derleme Artifaktlarını Yükle
       - name: Publish Build Artifacts
