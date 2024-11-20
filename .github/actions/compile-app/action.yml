@@ -43,6 +43,12 @@ runs:
         artifactName: ${{ inputs.artifactName }}
         Build_StagingDirectory: ${{ env.Build_StagingDirectory }}
       run: |
+        Write-Host "Debugging Build_StagingDirectory in Compile-App Action:"
+        Write-Host "Build_StagingDirectory: $env:Build_StagingDirectory"  
+        Write-Host "Debugging Secrets"
+        Write-Host "BC_USERNAME: $env:BC_USERNAME"
+        Write-Host "BC_PASSWORD: $env:BC_PASSWORD"
+        Write-Host "LICENSE_FILE: $env:LICENSE_FILE"
 
         Write-Host "Debugging Build_StagingDirectory in Compile-App Action:"
         Write-Host "Build_StagingDirectory: $env:Build_StagingDirectory"  
@@ -63,7 +69,6 @@ runs:
 
         $containerName = $env:containerName
         $artifactName = $env:artifactName
-
 
         if (-not $env:BC_USERNAME) {
              Write-Host "Error: BC_USERNAME is empty or not set."

@@ -16,12 +16,9 @@ permissions:
 
 env:
   system_debug: true
-
   Build_StagingDirectory: ${{ github.workspace }}\Build\Staging
   ACTIONS_RUNNER_DEBUG: true
   ACTIONS_STEP_DEBUG: true
-
-
 
 
 
@@ -29,7 +26,6 @@ jobs:
   build-and-deploy:
     runs-on: windows-latest
     environment: LocalizationSandbox
-
 
    
 
@@ -100,7 +96,6 @@ jobs:
           $artifactsDirectory = "${{ github.workspace }}\Artifacts"
           Write-Host "Artifacts Directory Content:"
           Get-ChildItem -Path $artifactsDirectory    
- 
 
 
       # AL Uygulamasını Yayınla
