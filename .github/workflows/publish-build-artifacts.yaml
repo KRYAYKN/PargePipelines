@@ -1,0 +1,19 @@
+name: Publish Build Artifacts
+on:
+  workflow_call:
+    inputs:
+      artifactsDirectory:
+        description: "The directory containing the build artifacts to publish."
+        required: true
+        type: string
+
+jobs:
+  upload-artifacts:
+    runs-on: windows-latest
+
+    steps:
+      - name: Publish Build Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Artifacts
+          path: ${{ inputs.artifactsDirectory }}

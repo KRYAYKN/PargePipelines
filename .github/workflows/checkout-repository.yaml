@@ -1,0 +1,13 @@
+name: Checkout Repository
+on:
+  workflow_call:
+
+jobs:
+  checkout:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true

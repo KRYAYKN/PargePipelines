@@ -21,6 +21,7 @@ inputs:
 runs:
   using: "composite"
   steps:
+
     - name: Ensure Staging Directory Exists
       shell: pwsh
       env:
@@ -34,6 +35,7 @@ runs:
         }
 
     - name: Compile Application
+      id: compile
       shell: pwsh
       env:
         BC_PASSWORD: ${{ inputs.BC_PASSWORD }}

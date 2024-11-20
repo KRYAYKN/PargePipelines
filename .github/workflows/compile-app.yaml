@@ -1,0 +1,106 @@
+name: Compile and Prepare AL Application
+on:
+  workflow_call:
+    inputs:
+      containerName:
+        description: "The name of the Business Central container."
+        required: true
+        type: string
+      artifactName:
+        description: "The name of the artifact."
+        required: true
+        type: string
+      BC_USERNAME:
+        description: "BC username"
+        required: true
+        type: string
+      BC_PASSWORD:
+        description: "BC password"
+        required: true
+        type: string
+      LICENSE_FILE:
+        description: "License file"
+        required: true
+        type: string
+
+jobs:
+  compile-and-prepare:
+    runs-on: windows-latest
+
+    env:
+      Build_StagingDirectory: ${{ github.workspace }}/Build/Staging
+
+    steps:
+      - name: Compile AL Application
+        shell: pwsh
+        env:
+          Build_StagingDirectory: ${{ env.Build_StagingDirectory }}
+        run: |
+          # Install bccontainerhelper
+          Install-Module -Name bccontainerhelper -Force
+          $module = Get-InstalledModule -Name bccontainerhelper -ErrorAction Ignore
+          Write-Host "BcContainerHelper $($module.Version.ToString()) installed"
+
+          # Compile AL application
+          $containerName = "${{ inputs.containerName }}"
+          $artifactName = "${{ inputs.artifactName }}"
+          $username = "${{ inputs.BC_USERNAME }}"
+          $password = ConvertTo-SecureString "${{ inputs.BC_PASSWORD }}" -AsPlainText -Force
+          $credential = New-Object System.Management.Automation.PSCredential ($username, $password)
+          $licenseFile = "${{ inputs.LICENSE_FILE }}"
+          $stagingDirectory = "$env:Build_StagingDirectory"
+
+          # Initialize container and compile app
+          $artifactUrl = Get-BCArtifactUrl -country w1 -select Latest -type Sandbox
+          New-BcContainer -accept_eula -containerName $containerName -artifactUrl $artifactUrl -auth NavUserPassword -credential $credential -licenseFile $licenseFile -accept_outdated
+          Compile-AppInBcContainer -appProjectFolder (Get-Location) -containerName $containerName -credential $credential
+
+          # Ensure Staging Directory exists
+          if (-Not (Test-Path -Path $stagingDirectory)) {
+              Write-Host "Staging directory does not exist. Creating: $stagingDirectory"
+              New-Item -ItemType Directory -Path $stagingDirectory | Out-Null
+          }
+
+          # Move compiled app to staging directory
+          $appFile = Get-ChildItem -Path "output" -Filter "*.app" | Select-Object -First 1
+          if ($appFile) {
+              Copy-Item -Path $appFile.FullName -Destination $stagingDirectory -Force
+              Write-Host "App file moved to staging directory: $stagingDirectory"
+          } else {
+              Write-Host "No .app file found in the output directory."
+              exit 1
+          }
+
+      - name: Debug Staging Directory Content
+        shell: pwsh
+        run: |
+          Write-Host "Checking Staging Directory Content:"
+          Get-ChildItem -Path ${{ env.Build_StagingDirectory }}
+
+      - name: Copy App to Artifacts Directory
+        shell: pwsh
+        run: |
+          $stagingDirectory = "${{ env.Build_StagingDirectory }}"
+          $artifactsDirectory = "${{ github.workspace }}/Artifacts"
+
+          if (-Not (Test-Path -Path $artifactsDirectory)) {
+              Write-Host "Artifacts directory does not exist. Creating: $artifactsDirectory"
+              New-Item -ItemType Directory -Path $artifactsDirectory | Out-Null
+          }
+
+          Write-Host "Copying .app file from staging directory: $stagingDirectory to artifacts directory: $artifactsDirectory..."
+          $AppFile = Get-ChildItem -Path $stagingDirectory -Filter "*.app" | Select-Object -First 1
+          if ($AppFile) {
+              Copy-Item -Path $AppFile.FullName -Destination $artifactsDirectory -Force
+              Write-Host "Copied .app file to Artifacts Directory: $($AppFile.FullName)"
+          } else {
+              Write-Host "No .app file found in staging directory: $stagingDirectory"
+              exit 1
+          }
+
+      - name: Debug Artifacts Directory Content
+        shell: pwsh
+        run: |
+          $artifactsDirectory = "${{ github.workspace }}/Artifacts"
+          Write-Host "Artifacts Directory Content:"
+          Get-ChildItem -Path $artifactsDirectory
