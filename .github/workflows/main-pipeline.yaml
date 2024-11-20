@@ -50,6 +50,6 @@ jobs:
 
   publish-build-artifacts:
     needs: publish-app
-    uses: KRYAYKN/PargePipelines/.github/workflows/publish-build-artifacts.yaml@mpromotion/staging
+    uses: KRYAYKN/PargePipelines/.github/workflows/publish-build-artifacts.yaml@promotion/staging
     with:
       artifactsDirectory: ${{ env.Build_StagingDirectory }}
