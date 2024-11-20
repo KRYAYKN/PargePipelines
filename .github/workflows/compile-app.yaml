@@ -22,6 +22,10 @@ on:
         description: "License file"
         required: true
         type: string
+      ENVIRONMENT:
+        description: "The environment name"
+        required: true
+        type: string  
 
 jobs:
   compile-and-prepare:
@@ -31,6 +35,11 @@ jobs:
       Build_StagingDirectory: ${{ github.workspace }}/Build/Staging
 
     steps:
+      - name: Use Secrets
+        run: |
+          echo "Using secrets in the reusable workflow"
+          echo "BC_USERNAME: ${{ inputs.BC_USERNAME }}"
+          echo "BC_PASSWORD: ${{ inputs.BC_PASSWORD }}"  
       - name: Compile AL Application
         shell: pwsh
         env:
