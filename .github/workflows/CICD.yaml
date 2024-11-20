@@ -16,18 +16,25 @@ permissions:
 
 env:
   system_debug: true
+  Build_StagingDirectory: ${{ github.workspace }}\Build\Staging
+  ACTIONS_RUNNER_DEBUG: true
+  ACTIONS_STEP_DEBUG: true
+
 
 jobs:
   build-and-deploy:
     runs-on: windows-latest
+    environment: LocalizationSandbox
+   
 
     steps:
+      # Repository'yi Checkout Et
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           submodules: true
 
-      # Docker Yüklemesini ve Hizmetini Kontrol Etme
+      # Docker Kurulumunu Kontrol Et
       - name: Check Docker Installation
         shell: pwsh
         run: |
@@ -38,41 +45,70 @@ jobs:
             Write-Host "Docker is installed and running."
           }
 
+      # Docker Servisini Başlat
       - name: Start Docker Service
         shell: pwsh
         run: |
           Start-Service docker
           Write-Host "Docker service started successfully."
 
-      - name: Verify Docker Is Running
-        shell: pwsh
-        run: |
-          docker ps || Write-Host "Docker is running, but no containers are active."
-
-      # AL Uygulamasını Derleme
-      - name: Build AL Application
+      # AL Uygulamasını Derle
+      - name: Compile AL Application
         uses: ./.github/actions/compile-app
         with:
-          containerName: "${{ vars.containerName }}"
-          artifactName: "${{ vars.artifactName }}"
+          containerName: ${{ vars.CONTAINERNAME }}
+          artifactName: ${{ vars.ARTIFACTNAME }}
+          BC_USERNAME: ${{ secrets.BC_USERNAME }}
+          BC_PASSWORD: ${{ secrets.BC_PASSWORD }}
+          LICENSE_FILE: ${{ secrets.LICENSE_FILE }}
 
-      # AL Uygulamasını Yayınlama
+      - name: Debug Staging Directory Content
+        shell: pwsh
+        run: |
+          Write-Host "Checking Staging Directory Content:"
+          Get-ChildItem -Path ${{ env.Build_StagingDirectory }}
+  
+      - name: Copy App to Artifacts Directory
+        shell: pwsh
+        run: |
+          $stagingDirectory = "${{ env.Build_StagingDirectory }}"
+          $artifactsDirectory = "${{ github.workspace }}\Artifacts"
+  
+          if (-Not (Test-Path -Path $artifactsDirectory)) {
+              Write-Host "Artifacts directory does not exist. Creating: $artifactsDirectory"
+              New-Item -ItemType Directory -Path $artifactsDirectory | Out-Null
+          }
+  
+          Write-Host "Copying .app file from staging to artifacts directory..."
+          $AppFile = Get-ChildItem -Path $stagingDirectory -Filter "*.app" | Select-Object -First 1
+          if ($AppFile) {
+              Copy-Item -Path $AppFile.FullName -Destination $artifactsDirectory -Force
+              Write-Host "Copied .app file to Artifacts Directory: $($AppFile.FullName)"
+          } else {
+              Write-Host "No .app file found in staging directory: $stagingDirectory"
+              exit 1
+            }
+      - name: Debug Artifacts Directory Content
+        shell: pwsh
+        run: |
+          $artifactsDirectory = "${{ github.workspace }}\Artifacts"
+          Write-Host "Artifacts Directory Content:"
+          Get-ChildItem -Path $artifactsDirectory    
+ 
+
+      # AL Uygulamasını Yayınla
       - name: Publish AL Application
         uses: ./.github/actions/publish-app
         with:
-          containerName: "${{ vars.containerName }}"
-          artifactName: "${{ vars.artifactName }}"
+          containerName: ${{ vars.CONTAINERNAME }}
+          artifactName: ${{ vars.ARTIFACTNAME }}
+          TENANT_ID: ${{ secrets.TENANT_ID }}
+          REFRESHTOKEN: ${{ secrets.REFRESHTOKEN}}
+          ENVIRONMENT: "LocalizationSandbox"
 
-      # Derleme Artifaktlarını Yükleme
+      # Derleme Artifaktlarını Yükle
       - name: Publish Build Artifacts
         uses: actions/upload-artifact@v3
         with:
           name: Artifacts
-          path: "$GITHUB_WORKSPACE/Build/Staging"
-
-      # Geçici Dosyaları Temizleme
-      - name: Clean up Temporary Files
-        shell: pwsh
-        run: |
-          Remove-Item -Path "D:\BcContainerHelper\Extensions\${{ vars.containerName }}\my\${{ vars.artifactName }}" -Recurse -Force
-
+          path: ${{ env.Build_StagingDirectory }}
