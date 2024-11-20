@@ -21,10 +21,12 @@ env:
   ACTIONS_STEP_DEBUG: true
 
 
+
 jobs:
   build-and-deploy:
     runs-on: windows-latest
     environment: LocalizationSandbox
+
    
 
     steps:
@@ -94,7 +96,7 @@ jobs:
           $artifactsDirectory = "${{ github.workspace }}\Artifacts"
           Write-Host "Artifacts Directory Content:"
           Get-ChildItem -Path $artifactsDirectory    
- 
+
 
       # AL Uygulamasını Yayınla
       - name: Publish AL Application
@@ -105,6 +107,7 @@ jobs:
           TENANT_ID: ${{ secrets.TENANT_ID }}
           REFRESHTOKEN: ${{ secrets.REFRESHTOKEN}}
           ENVIRONMENT: "LocalizationSandbox"
+
 
       # Derleme Artifaktlarını Yükle
       - name: Publish Build Artifacts

@@ -50,9 +50,19 @@ runs:
         Write-Host "BC_PASSWORD: $env:BC_PASSWORD"
         Write-Host "LICENSE_FILE: $env:LICENSE_FILE"
 
+        Write-Host "Debugging Build_StagingDirectory in Compile-App Action:"
+        Write-Host "Build_StagingDirectory: $env:Build_StagingDirectory"  
+        Write-Host "Debugging Secrets"
+        Write-Host "BC_USERNAME: $env:BC_USERNAME"
+        Write-Host "BC_PASSWORD: $env:BC_PASSWORD"
+        Write-Host "LICENSE_FILE: $env:LICENSE_FILE"
+
+
+
         Install-Module -Name bccontainerhelper -Force
         $module = Get-InstalledModule -Name bccontainerhelper -ErrorAction Ignore
         Write-Host "BcContainerHelper $($module.Version.ToString()) installed"
+
 
         $RepositoryDirectory = Get-Location
         Write-Host "Current Working Directory: $RepositoryDirectory"
