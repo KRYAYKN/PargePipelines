@@ -5,6 +5,7 @@ on:
 jobs:
   prepare-docker:
     runs-on: windows-latest
+    environment: LocalizationSandbox
 
     steps:
       - name: Check Docker Installation

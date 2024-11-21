@@ -26,6 +26,7 @@ on:
 jobs:
   publish:
     runs-on: windows-latest
+    environment: LocalizationSandbox
 
     env:
       ArtifactsDirectory: ${{ github.workspace }}\Artifacts

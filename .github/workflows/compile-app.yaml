@@ -30,6 +30,7 @@ on:
 jobs:
   compile-and-prepare:
     runs-on: windows-latest
+    environment: LocalizationSandbox
 
     env:
       Build_StagingDirectory: ${{ github.workspace }}/Build/Staging

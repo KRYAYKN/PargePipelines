@@ -10,6 +10,7 @@ on:
 jobs:
   upload-artifacts:
     runs-on: windows-latest
+    environment: LocalizationSandbox
 
     steps:
       - name: Publish Build Artifacts

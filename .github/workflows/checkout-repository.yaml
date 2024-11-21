@@ -5,6 +5,7 @@ on:
 jobs:
   checkout:
     runs-on: windows-latest
+    environment: LocalizationSandbox
 
     steps:
       - name: Checkout Repository
